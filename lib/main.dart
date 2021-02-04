@@ -111,6 +111,37 @@ class _HomePage extends State<HomePage> {
 
   bool _showChart = false;
 
+  Widget _buildLandscape(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Show Chart',
+          style: Theme.of(context).textTheme.title,
+        ),
+        Switch.adaptive(
+          activeColor: Theme.of(context).accentColor,
+          value: _showChart,
+          onChanged: (value) {
+            setState(() {
+              _showChart = value;
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortrait(MediaQueryData mediaQuery, PreferredSizeWidget appBar) {
+    return Container(
+      height: (mediaQuery.size.height -
+              mediaQuery.padding.top -
+              appBar.preferredSize.height) *
+          0.3,
+      child: Chart(_recentTransactions),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -153,35 +184,8 @@ class _HomePage extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isLandscape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Show Chart',
-                    style: Theme.of(context).textTheme.title,
-                  ),
-                  Switch.adaptive(
-                    activeColor: Theme.of(context).accentColor,
-                    value: _showChart,
-                    onChanged: (value) {
-                      setState(() {
-                        _showChart = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            if (!isLandscape)
-              Container(
-                height: (mediaQuery.size.height -
-                        mediaQuery.padding.top -
-                        appBar.preferredSize.height) *
-                    0.3,
-                child: Chart(_recentTransactions),
-              ),
-            if (!isLandscape) transactionListWidget,
-            if (isLandscape)
+            if (isLandscape) ...[
+              _buildLandscape(context),
               _showChart
                   ? Container(
                       height: (mediaQuery.size.height -
@@ -190,7 +194,12 @@ class _HomePage extends State<HomePage> {
                           0.7,
                       child: Chart(_recentTransactions),
                     )
-                  : transactionListWidget
+                  : transactionListWidget,
+            ],
+            if (!isLandscape) ...[
+              _buildPortrait(mediaQuery, appBar),
+              transactionListWidget
+            ],
           ],
         ),
       ),
